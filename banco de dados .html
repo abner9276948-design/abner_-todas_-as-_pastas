@@ -1,0 +1,563 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Projeto de banco de dados da Urna Eletrônica Escolar com Supabase.">
+
+    <title>Urna Escolar | Banco de Dados</title>
+
+    <style>
+        /* =====================================
+           1. CONFIGURAÇÕES GERAIS
+        ===================================== */
+
+        :root {
+            --azul: #17326b;
+            --azul-claro: #2454a6;
+            --verde: #176b45;
+            --amarelo: #f0b429;
+            --fundo: #f1f5f9;
+            --branco: #ffffff;
+            --texto: #233047;
+            --cinza: #64748b;
+            --borda: #dbe4ef;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--fundo);
+            color: var(--texto);
+            min-height: 100vh;
+            padding: 30px 16px;
+            line-height: 1.6;
+        }
+
+        /* =====================================
+           2. ESTRUTURA PRINCIPAL
+        ===================================== */
+
+        .pagina {
+            width: min(100%, 850px);
+            margin: auto;
+        }
+
+        .aplicativo {
+            background: var(--branco);
+            border: 1px solid var(--borda);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 12px 32px rgb(23 50 107 / 10%);
+        }
+
+        /* =====================================
+           3. CABEÇALHO
+        ===================================== */
+
+        .cabecalho {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 28px;
+            color: white;
+            background: linear-gradient(
+                135deg,
+                var(--azul),
+                var(--azul-claro)
+            );
+        }
+
+        .icone {
+            display: grid;
+            width: 55px;
+            height: 55px;
+            flex: 0 0 55px;
+            place-items: center;
+            background: white;
+            color: var(--azul);
+            border-radius: 15px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .etiqueta {
+            color: #f0cf75;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .cabecalho h1 {
+            font-size: clamp(22px, 5vw, 32px);
+            margin-top: 3px;
+        }
+
+        .subtitulo {
+            color: #dbeafe;
+            font-size: 14px;
+        }
+
+        /* =====================================
+           4. CONTEÚDO
+        ===================================== */
+
+        .conteudo {
+            padding: 28px;
+        }
+
+        .descricao {
+            color: var(--cinza);
+            margin-bottom: 24px;
+        }
+
+        .secao {
+            padding: 22px;
+            margin-bottom: 20px;
+            border: 1px solid var(--borda);
+            border-radius: 13px;
+            background: white;
+        }
+
+        .secao h2 {
+            color: var(--azul);
+            font-size: 20px;
+            margin-bottom: 14px;
+        }
+
+        .secao p {
+            margin-bottom: 10px;
+        }
+
+        /* =====================================
+           5. SITUAÇÃO DO PROJETO
+        ===================================== */
+
+        .situacao {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px;
+            background: #eaf7ef;
+            color: var(--verde);
+            border-radius: 9px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .ponto {
+            width: 10px;
+            height: 10px;
+            background: var(--verde);
+            border-radius: 50%;
+        }
+
+        /* =====================================
+           6. OBJETIVO
+        ===================================== */
+
+        .destaque {
+            padding: 16px;
+            background: #edf3ff;
+            border-left: 4px solid var(--azul-claro);
+            border-radius: 7px;
+        }
+
+        /* =====================================
+           7. TABELA DO BANCO DE DADOS
+        ===================================== */
+
+        .tabela-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 550px;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: 13px;
+            background: var(--azul);
+            color: white;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 13px;
+            border-bottom: 1px solid var(--borda);
+            font-size: 14px;
+        }
+
+        tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        td:first-child {
+            color: var(--azul);
+            font-weight: bold;
+        }
+
+        /* =====================================
+           8. INDICADOR DE PARTICIPAÇÃO
+        ===================================== */
+
+        .status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .nao-votou {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .ja-votou {
+            background: #d1fae5;
+            color: #176b45;
+        }
+
+        /* =====================================
+           9. INFORMAÇÕES IMPORTANTES
+        ===================================== */
+
+        .informacao {
+            padding: 17px;
+            background: #fff8e6;
+            border-left: 4px solid var(--amarelo);
+            border-radius: 7px;
+            margin-top: 12px;
+        }
+
+        .informacao strong {
+            color: var(--azul);
+        }
+
+        .lista {
+            padding-left: 22px;
+        }
+
+        .lista li {
+            margin-bottom: 9px;
+        }
+
+        /* =====================================
+           10. RODAPÉ
+        ===================================== */
+
+        .rodape {
+            padding: 20px;
+            background: #f8fafc;
+            color: var(--cinza);
+            text-align: center;
+            border-top: 1px solid var(--borda);
+            font-size: 13px;
+        }
+
+        .rodape strong {
+            color: var(--azul);
+        }
+
+        /* =====================================
+           11. RESPONSIVIDADE
+        ===================================== */
+
+        @media (max-width: 620px) {
+
+            body {
+                padding: 15px 10px;
+            }
+
+            .cabecalho {
+                padding: 22px 17px;
+            }
+
+            .conteudo {
+                padding: 17px;
+            }
+
+            .secao {
+                padding: 17px;
+            }
+
+            .icone {
+                width: 48px;
+                height: 48px;
+                flex-basis: 48px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="pagina">
+
+        <div class="aplicativo">
+
+            <!-- CABEÇALHO -->
+            <header class="cabecalho">
+
+                <div class="icone">✓</div>
+
+                <div>
+                    <p class="etiqueta">PARTICIPAÇÃO ESTUDANTIL</p>
+
+                    <h1>Urna Eletrônica Escolar</h1>
+
+                    <p class="subtitulo">
+                        Sistema de identificação e controle de votação
+                    </p>
+                </div>
+
+            </header>
+
+            <div class="conteudo">
+
+                <p class="descricao">
+                    Projeto educacional de banco de dados utilizando
+                    a plataforma Supabase.
+                </p>
+
+                <!-- SITUAÇÃO -->
+                <section class="secao">
+
+                    <h2>1. Situação do Projeto</h2>
+
+                    <div class="situacao">
+                        <span class="ponto"></span>
+                        Frontend desenvolvido e publicado como demonstração.
+                    </div>
+
+                    <p>
+                        O frontend da Urna Eletrônica Escolar já foi
+                        desenvolvido e publicado como demonstração.
+                    </p>
+
+                    <p>
+                        Nesta etapa, será criado do zero o projeto de
+                        banco de dados utilizando o Supabase.
+                    </p>
+
+                </section>
+
+                <!-- OBJETIVO -->
+                <section class="secao">
+
+                    <h2>2. Objetivo</h2>
+
+                    <p>
+                        Estruturar uma tabela para registrar a
+                        identificação do estudante e o status de
+                        participação na votação.
+                    </p>
+
+                    <div class="destaque">
+
+                        <strong>Privacidade da votação:</strong>
+
+                        <p>
+                            O banco de dados não deverá relacionar
+                            o estudante à opção escolhida durante
+                            a votação.
+                        </p>
+
+                    </div>
+
+                </section>
+
+                <!-- DADOS PREVISTOS -->
+                <section class="secao">
+
+                    <h2>3. Dados Previstos</h2>
+
+                    <p>
+                        A tabela do banco de dados deverá armazenar
+                        as seguintes informações:
+                    </p>
+
+                    <div class="tabela-container">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+                                    <td>nome_completo</td>
+                                    <td>TEXT</td>
+                                    <td>Nome completo do estudante.</td>
+                                </tr>
+
+                                <tr>
+                                    <td>numero_identificacao</td>
+                                    <td>TEXT</td>
+                                    <td>Número de identificação.</td>
+                                </tr>
+
+                                <tr>
+                                    <td>ano_letivo</td>
+                                    <td>INTEGER</td>
+                                    <td>Ano letivo.</td>
+                                </tr>
+
+                                <tr>
+                                    <td>serie</td>
+                                    <td>TEXT</td>
+                                    <td>Série escolar.</td>
+                                </tr>
+
+                                <tr>
+                                    <td>turma</td>
+                                    <td>TEXT</td>
+                                    <td>Turma do estudante.</td>
+                                </tr>
+
+                                <tr>
+                                    <td>ja_votou</td>
+                                    <td>BOOLEAN</td>
+                                    <td>Indicador de participação.</td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </section>
+
+                <!-- CONTROLE DE PARTICIPAÇÃO -->
+                <section class="secao">
+
+                    <h2>4. Controle de Participação</h2>
+
+                    <p>
+                        O campo <strong>ja_votou</strong> será utilizado
+                        para indicar se o estudante já participou
+                        da votação.
+                    </p>
+
+                    <p>
+                        Existem dois estados possíveis:
+                    </p>
+
+                    <p>
+                        <span class="status nao-votou">FALSE — Não votou</span>
+                    </p>
+
+                    <p>
+                        <span class="status ja-votou">TRUE — Já votou</span>
+                    </p>
+
+                </section>
+
+                <!-- SUPABASE -->
+                <section class="secao">
+
+                    <h2>5. Banco de Dados Supabase</h2>
+
+                    <p>
+                        O Supabase será utilizado como plataforma
+                        para criar e administrar o banco de dados
+                        da Urna Eletrônica Escolar.
+                    </p>
+
+                    <ul class="lista">
+
+                        <li>Armazenar a identificação dos estudantes.</li>
+
+                        <li>Registrar o ano letivo, série e turma.</li>
+
+                        <li>Controlar se o estudante já votou.</li>
+
+                        <li>Organizar as informações dos eleitores.</li>
+
+                    </ul>
+
+                </section>
+
+                <!-- INFORMAÇÃO IMPORTANTE -->
+                <section class="secao">
+
+                    <h2>6. Informação Importante</h2>
+
+                    <div class="informacao">
+
+                        <p>
+                            <strong>Desenvolvedor:</strong>
+                            o aluno responsável pelo projeto deverá
+                            criar uma conta no Supabase.
+                        </p>
+
+                        <p>
+                            <strong>Estudantes eleitores:</strong>
+                            não precisam criar contas individuais
+                            no Supabase para votar.
+                        </p>
+
+                    </div>
+
+                </section>
+
+                <!-- CONCLUSÃO -->
+                <section class="secao">
+
+                    <h2>7. Conclusão</h2>
+
+                    <p>
+                        A criação do banco de dados permitirá
+                        organizar a identificação dos estudantes
+                        e controlar a participação na votação escolar.
+                    </p>
+
+                    <p>
+                        A identificação do estudante será mantida
+                        separada da opção escolhida, respeitando
+                        a proposta de privacidade do projeto.
+                    </p>
+
+                </section>
+
+            </div>
+
+            <!-- RODAPÉ -->
+            <footer class="rodape">
+
+                <p>
+                    <strong>Urna Eletrônica Escolar</strong>
+                </p>
+
+                <p>
+                    Projeto educacional — Banco de Dados Supabase
+                </p>
+
+            </footer>
+
+        </div>
+
+    </main>
+
+</body>
+</html>
